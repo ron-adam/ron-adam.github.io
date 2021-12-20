@@ -259,17 +259,16 @@ void main(void) {
 
     if (uMode == 0) {
         // Gradient of amplitude.   
-        vec4 y = gradient_sample(uSampler, TC);
+        vec4 y = gaussian_gradient_sample(uSampler, TC, .5);
         float v = mpolate(y.a, y.b, y.g, 1.0 - uFrameTime);
         v = clamp(v/uScale, 0.0, 1.0);
-        v = (v < 0.5) ? pow(v * 2.0, 0.5)/2.0 : pow((v - 0.5) * 2.0, 2.0)/2.0 + 0.5;
-        fragColor4 = texture(uColor1, vec2(v, 0.0));
+        fragColor4 = vec4(pow(v, 4.0), pow(v, 1.5), pow(v, 0.7), 1.0);
     }
     else if (uMode == 1) {    
         // Amplitude.
         vec4 y = texture(uSampler, TC);    
         float v = mpolate(y.a, y.b, y.g, 1.0 - uFrameTime);
-        v = clamp(0.5 + v/uScale * 0.5, 0.0, 1.0);
+        v = clamp((v/uScale + 1.0) * 0.5, 0.0, 1.0);
         fragColor4 = texture(uColor2, vec2(v, 0.0));
     }
     else if (uMode == 2) {
@@ -329,8 +328,8 @@ const VALUES = {"Sigma":2,
                 "E1":2,
                 "C2":0.5,
                 "E2":2,
-                "Width":256,
-                "Height":256,
+                "Width":320,
+                "Height":180,
                 "Edge":0,       // 0:Reflect
                 "Mode":0,       // 0:Gradient
                 "Scale":4,
@@ -347,14 +346,16 @@ const MODE = ["Gradient", "Amplitude", "Momentum", "Acceleration"]
 const EDGE = ["Reflect", "Wrap", "Rounded"]
 const UNIFORMS = new Set(["Sigma", "C1", "E1", "C2", "E2", "uE2"])
 
+/*
 //  CREATE COLOR LUT
 const ColorLUT1 = new Uint8Array([
-      0,   0,   0, 255,
-      0,   0, 255, 255,
-      0, 100, 255, 255,
-    255, 255, 255, 255,        
-]);
-    
+      0,   0,   0, 255,  // black
+      0,   0, 255, 255,  // blue
+      0, 255,   0, 255,  // green      
+    255,   0,   0, 255,  // red      
+    255, 255, 255, 255,  // white   
+]); */
+
 const ColorLUT2 = new Uint8Array([            
     255, 100, 100, 128,
     255, 0,   0,   255, 
@@ -469,8 +470,8 @@ function main() {
     
     
 
-    // Define color table2.
-    var width = 4;
+ /*   // Define color table2.
+    var width = 5;
     var height = 1;
     var texture = gl.createTexture()
     gl.activeTexture(gl.TEXTURE0 + 2)
@@ -481,7 +482,7 @@ function main() {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
     gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    set_uniform_1i(prog_draw, "uColor1", 2)
+    set_uniform_1i(prog_draw, "uColor1", 2) */
     
     // Define color table2.
     var width = 5;
@@ -1827,7 +1828,7 @@ New Wave:  U = U * fb                 ;With feedback.
     <td colspan='2'>
         <div class="card-rounded grad-blue small space-between middle">
             <div>
-                <span>Copyright all rights reserved 2021 by Ronald Adam</span>
+                <span>Copyright all rights reserved 2021 by Ronald Adam</span>&nbsp;&nbsp;
                 <span class="tab14">Version: 1.0A</span>
             </div>
             <div>
