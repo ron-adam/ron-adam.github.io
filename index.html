@@ -2,14 +2,14 @@
 <html lang="en">
     
 <head>
-    <title>Emergent Behaviors In Waves</title>
+    <title>Simulation Of Quantified Behaviors In 2D Waves</title>
     <meta http-equiv="content-type"
           content="text/html; charset=utf-8">
     <meta http-equiv="expires" content="0">
     <meta name="author"
           content="Ronald Adam" >
     <meta name="description"
-          content="Emergent Behaviors In Waves, Simulation #1.">
+          content="Simulation of a possible mechanism for quantafied energy from waves.">
     <meta name="keywords"
           content="relativity, quantum, gaussian, simulation, wave, particle, feedback, phase, vortex" >
     <meta name="viewport"
@@ -1314,24 +1314,24 @@ input {
                 <div class='card-rounded grad-blue middle space-between'>
 
                     <div>
-                        <h1 class="teal">Emergent Behaviors In Waves, Simulation #1.</h1>
+                        <h1 class="teal">Simulation of Quantified Waves in 2D</h1>
                     </div>
                     <div>
                         <!-- Trigger to Open the Modal -->
-                        <button onclick="document.getElementById('id01').style.display='help'">Help</button>
-                        <button onclick="document.getElementById('id01').style.display='details'">Details</button>        
-                        <button onclick="document.getElementById('id01').style.display='block'">About</button>
+                        <button onclick="document.getElementById('help').style.display='block'">Help</button>
+                        <button onclick="document.getElementById('details').style.display='block'">Details</button>        
+                        <button onclick="document.getElementById('about').style.display='block'">About</button>
                     </div>
 
                     <!-- The Modal -->
-                    <div id="id01" class="modal">
+                    <div id="details" class="modal">
                         <div class="modal-content">
                             <div class="header middle space-between grad-gold card-rounded">
                                 <div>
                                     <h2 class="medium teal">QLET - A BEHAVIOUR IN WAVES THAT QUANTIZES ENERGY.</h2>
                                 </div>
                                 <div>
-                                    <button onclick="document.getElementById('id01').style.display='none'">Close</button>
+                                    <button onclick="document.getElementById('details').style.display='none'">Close</button>
                                 </div>
                             </div>
                             <div class="content scroll card-rounded">
@@ -1369,19 +1369,19 @@ input {
                                     of waves where they form phase vortex's.  So A QLet isn't
                                     an object as we normally think of them. It's a specific
                                     behavior, which has particle like relationships included
-                                    with it, but isn't a full particle in it's self. It may
+                                    with it, but isn't a full particle in itself. It may
                                     be possible to identify such behaviors in other processes.
                                 </p>
                                 <p>
                                     Some of these behaviors include attraction, repelling, quantifying
                                     wave energy. They also combine with other QLets to form more
-                                    complex forms.  They normally form in equal opposite spin
+                                    complex forms.  They normally form in opposite spin
                                     pairs.
                                 </p>
                                 <p>
                                     There are some interesting behaviors regarding the phase
                                     of QLets.  The phase is maintained between the nearest
-                                    QLets, and as the move around they exchange phase partners
+                                    QLets, and as they move around they exchange phase partners
                                     in a way that resembles dancing.
                                 </p>
                                 <p>
@@ -1400,7 +1400,7 @@ input {
                                 </p>
                                 <p>
                                     The simulation always keeps the last four frames in memory.
-                                    Only the two are needed for calculating the wave motion. The
+                                    Only the last two are needed for calculating the wave motion. The
                                     other two help with visualizing and interpreting the results.
                                 </p>
                                 <p>
@@ -1418,8 +1418,14 @@ And:    amplitude = U1
 Then:   U = amplitude + momentum + acceleration
                                 </pre>
                                 <p>
-                                    This describes how each point in the wave field evolves with
-                                    no feedback.
+                                    By taking the diffence of the last two wavestates, it's
+                                    possible to get the sum of all wave differentials at once.
+                                    Use of a gaussian smoothing function gives a good
+                                    approximation of dispersion of wave energy. The dispersion
+                                    minus the last wave state represents the vertical
+                                    acceleration force on the waves. This too works for all
+                                    superimposed waves at once. This describes how each point in
+                                    the wave field evolves in time with no feedback.
                                 </p>
                                 <br>
 
@@ -1445,23 +1451,19 @@ Then:   U = amplitude + momentum + acceleration
                                 <p>
                                     Which leaves spring like modifications and exponential
                                     shaping. And if these waves exist in free space, they will
-                                    also respond to values associated with relativity.  Those
-                                    are speed, and acceleration, and the total energy levels.
+                                    also respond to values associated with relativity.
                                 </p>
                                 <p>
                                     With only the last few frames available, we have a
                                     relatively small set of values to draw from. So the method
-                                    of used to derive the feedback expression start altering the
-                                    values involved and observe what worked and what did not.
+                                    used to derive the feedback expression was to start altering
+                                    the values involved and observe what worked and what did not.
                                     Over the course of a year, the two lines below emerged as a
                                     solution that resulted in the most complex and varied
                                     behaviors with well behaved results.  It was found a bit
-                                    later that using a Gaussian_filter instead of "Del"
+                                    later that using a Gaussian_filter instead of the Del
                                     operator enabled scaling the QLets behaviors nicely. And
-                                    then formula was improved in a number of steps.  But it's
-                                    beautify results with the finite difference method suggests
-                                    it is more than just a pretty picture. I believe this will
-                                    connect to other fields.
+                                    then the formula was improved in a number of steps.
                                 </p>
                                 <p>
                                     The feedback 'fb' includes acceleration and momentum with the
@@ -1474,36 +1476,38 @@ Where:     U  is the frame being calculated.
 
 And:       U1                         ;Amplitude Of last frame.
            m = U1 - U2                ;Difference from previous frame.
-           a = gaussian(U1) - U1      ;Gausian difference.
+           a = gaussian(U1) - U1      ;Gaussian difference.
 
-Next Wave: U = U1 + m + a             ;Without feedback.
+Next Wave: U = U1 + m + a             ;Amplitude without feedback.
 
 Feedback:  r = 2.0 + (a + m)^2
            fb = (r + .5) / (r + (U1 + a - m/r)^2
 
-New Wave:  U = U * fb                 ;With feedback.
+New Wave:  U = U * fb                 ;Amplitude with feedback.
                                 </pre>
                                 <br>
 
                                 <h3>5. NOTES REGARDING THE FORMULA</h3>
                                 <p>
-                                    The first '2.0' value is a scaler where larger values
+                                    The first '2.0' value, (constant 1 or C1), is a scaler where larger values
                                     reduce the effect of the other terms.  It can be increased
                                     to the point where the whole expression has little effect.
                                 </p>
                                 <p>
-                                    The '0.5' value is a pivot for for the expression.  As the
+                                    The '0.5' value, (constant 2 or C2), is a pivot for for the expression.  As the
                                     amplitude increases below or above it, the force to 
-                                    return to center increases. So this acts like a membrane as
-                                    often pictured in relativity.
+                                    return to center relative to the area around it increases.
+                                    So this acts like a membrane as often pictured in relativity.
                                 </p>
                                 <p>
                                     The term (a + m)^2 is the velocity of change of the amplitude.
                                     As this velocity increases,  it lessons the pull of the
-                                    amplitude has back to center back to center. The effect is a
-                                    wave takes longer to return to. So an increase in vertical wave
+                                    amplitude has back to balance condition. The effect is a
+                                    wave takes longer to return. So an increase in vertical wave
                                     speed result in a slowing of the horizontal speed. This is the
-                                    cause of increased curl in the waves.
+                                    cause of increased curl in the waves as low amplitude waves
+                                    travel streighter, but high amplitude waves relative to the
+                                    wave length curl around each other.
                                 </p>
                                 <p>
                                     The whole expression increases the force from that of the
@@ -1515,7 +1519,9 @@ New Wave:  U = U * fb                 ;With feedback.
                                 <p>
                                     You may notice time isn't represented in the equation, it's 
                                     value is always 1.0 in the stepwise direction, and so it
-                                    either cancels out or is dropped.
+                                    either cancels out or is dropped. So time becomes implicit
+                                    in the waves relative to both the gaussian Sigma value and
+                                    the characteristics of the feedback tension as the wave moves.
                                 </p>
                                 <p>
                                     This sigma value used in the Gaussian filter determines the
@@ -1524,22 +1530,20 @@ New Wave:  U = U * fb                 ;With feedback.
                                     also is normalized, so it decreases the force at the location
                                     it is calculated at.  So wider and lower.  This has the effect
                                     of scaling everything up or down.  A larger sigma value makes
-                                    the waves lower and wider.  (also slower).  And smaller values
-                                    result in small convolution kernels with steep sides, so
-                                    everything gets smaller and faster.
+                                    the waves lower and wider.  And smaller values result in small
+                                    convolution kernels with steep sides, so everything gets smaller.
                                 </p>
                                 <p>
                                     There are some practical limits. Sigma values below 0.5, don't
                                     have enough information to work correctly. A way around this is
                                     to increase the grid size and keep the sigma at levels where it
-                                    is more accurate.  The down side to that is it takes longer to
-                                    compute.
+                                    is more accurate.
                                 </p>
                                 <p>
                                     No skipped computation steps.  The finite difference method has
                                     as nice property where at unit time steps, it results in
                                     perfect solutions. That statement should be taken to mean
-                                    perfect in regards to the quality of the information used
+                                    perfect in regards to the quality of the information used.
                                 </p>
                                 <p>
                                     It is this property which gives results that seem to exceed the 
@@ -1552,14 +1556,14 @@ New Wave:  U = U * fb                 ;With feedback.
                                 <p>
                                     Tests for neutral waves with no feedback results in perfect 
                                     solutions at each grid point. And works at extreme levels of
-                                    amplitude.
+                                    amplitude and superposition.
                                 </p>
                                 <p>
-                                    You can test this your self by setting the value of the
+                                    You can test this yourself by setting the value of the
                                     first constant to one million which will effectively reduces
-                                    the effect all other terms have.  The run it ahead about 10,000
-                                    frames.  Then reverse it for another 10,000 frames.  It will
-                                    recover the starting image nearly perfectly.  If the feedback
+                                    the effect all other terms have.  Then run it ahead a few
+                                    thousand frames.  Then reverse it back.  It will recover the
+                                    starting image nearly perfectly.  If the feedback
                                     is turned completely off, it recovers the image exactly.
                                 </p>
                                 <br>
@@ -1578,8 +1582,7 @@ New Wave:  U = U * fb                 ;With feedback.
                                     constants (2.0 and .5) and the two exponents. Many times it
                                     results in either an all white or black screen, and
                                     adjusting the amplitude color scale up or down will resolve
-                                    that. Some results will just not work. But some are
-                                    extremely stable and very beautiful.
+                                    that.
                                 </p>
                                 <p>
                                     A note about update and video frequencies.  Modern video
