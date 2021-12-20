@@ -5,7 +5,11 @@
     <title>Simulation Of Quantified Behaviors In 2D Waves</title>
     <meta http-equiv="content-type"
           content="text/html; charset=utf-8">
-    <meta http-equiv="expires" content="0">
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
     <meta name="author"
           content="Ronald Adam" >
     <meta name="description"
@@ -233,8 +237,7 @@ void main(void) {
 const FS_draw = `#version 300 es
 precision highp float;
 uniform highp sampler2D uSampler;
-uniform sampler2D uColor1;
-uniform sampler2D uColor2;
+uniform sampler2D uColor;
     
 uniform float uFrameTime;
 uniform float uScale;
@@ -270,7 +273,7 @@ void main(void) {
         vec4 y = texture(uSampler, TC);    
         float v = mpolate(y.a, y.b, y.g, 1.0 - uFrameTime);
         v = clamp((v/uScale + 1.0) * 0.5, 0.0, 1.0);
-        fragColor4 = texture(uColor2, vec2(v, 0.0));
+        fragColor4 = texture(uColor, vec2(v, 0.0));
     }
     else if (uMode == 2) {
         // Momentum of amplitude.
@@ -279,7 +282,7 @@ void main(void) {
         float a2 = mpolate(y.a, y.b, y.g, 1.0 - uFrameTime);
         float v = (a1 - a2);
         v = clamp(0.5 + v/uScale * 0.5, 0.0, 1.0);
-        fragColor4 = texture(uColor2, vec2(v, 0.0));   
+        fragColor4 = texture(uColor, vec2(v, 0.0));   
     }
     else if (uMode == 3) {
         // Acceleration of amplitude.
@@ -289,7 +292,7 @@ void main(void) {
         float v = mpolate(dy.b, dy.g, dy.r, 1.0 - uFrameTime);
         v = clamp(0.5 + v/uScale * 0.5, 0.0, 1.0);
         v = (v < 0.5) ? pow(v * 2.0, 0.5)/2.0 : pow((v - 0.5) * 2.0, 2.0)/2.0 + 0.5;
-        fragColor4 = texture(uColor2, vec2(v, 0.0));
+        fragColor4 = texture(uColor, vec2(v, 0.0));
     }
 }`;
 
@@ -347,17 +350,8 @@ const MODE = ["Gradient", "Amplitude", "Momentum", "Acceleration"]
 const EDGE = ["Reflect", "Wrap", "Rounded"]
 const UNIFORMS = new Set(["Sigma", "C1", "E1", "C2", "E2", "uE2"])
 
-/*
-//  CREATE COLOR LUT
-const ColorLUT1 = new Uint8Array([
-      0,   0,   0, 255,  // black
-      0,   0, 255, 255,  // blue
-      0, 255,   0, 255,  // green      
-    255,   0,   0, 255,  // red      
-    255, 255, 255, 255,  // white   
-]); */
 
-const ColorLUT2 = new Uint8Array([            
+const ColorLUT = new Uint8Array([            
     255, 100, 100, 128,
     255, 0,   0,   255, 
     0,   0,   0,   255,
@@ -470,34 +464,20 @@ function main() {
     set_grid_size(`${VALUES["Width"]}, ${VALUES["Height"]}`)  
     
     
-
- /*   // Define color table2.
-    var width = 5;
-    var height = 1;
-    var texture = gl.createTexture()
-    gl.activeTexture(gl.TEXTURE0 + 2)
-    gl.bindTexture(gl.TEXTURE_2D, texture)
-    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, width, height)
-    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, ColorLUT1)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-    gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    set_uniform_1i(prog_draw, "uColor1", 2) */
     
-    // Define color table2.
+    // Define color table.
     var width = 5;
     var height = 1;
     var texture = gl.createTexture()
     gl.activeTexture(gl.TEXTURE0 + 3)
     gl.bindTexture(gl.TEXTURE_2D, texture)
     gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, width, height)
-    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, ColorLUT2)
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, ColorLUT)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
     gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)    
-    set_uniform_1i(prog_draw, "uColor2", 3)
+    set_uniform_1i(prog_draw, "uColor", 3)
     
     
     set_uniform_1i(prog_draw, "uSampler", 0)
@@ -1155,7 +1135,7 @@ input {
 .fit-rest {
     /* fits remaining width */
     display: table-cell;
-    width: 100%; 
+    width: 100%;
 }
 
 
@@ -1254,14 +1234,15 @@ input {
 }
 
 .canvas_area {
-    display: block;
     padding: 0;
-    margin: 1em;  
+    margin: 0;
+
 }
 .canvas {
-    height: calc(100vh - 13em);
     width: 100%;
-    object-fit: contain;
+    height: 100%;
+   /* height: calc(100vh - 13em);    
+    object-fit: contain; */ 
 }
 
 
@@ -1799,11 +1780,10 @@ New Wave:  U = U * fb                 ;Amplitude with feedback.
                             canvas.style.cursor = 'crosshair'
                             coord_div.style.display = 'block'
                             var rect = canvas.getBoundingClientRect()
-                            var width = rect.right - rect.left
-                            var height = rect.bottom - rect.top
-                            var x = (e.x - rect.left)/width * VALUES['Width']
-                            var y = (e.y - rect.top)/height * VALUES['Height']
-                                                        
+                            var width = canvas.clientWidth
+                            var height = canvas.clientHeight
+                            var x = (e.x - rect.left) * VALUES['Width']/width
+                            var y = (e.y - rect.top) * VALUES['Height']/height                                                        
                             //coord_div.style.display = 'block'
                             if (e.x > rect.right - 80) {
                                 coord_div.style.left = e.x - 75 + 'px' 
