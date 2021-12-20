@@ -329,8 +329,8 @@ const VALUES = {"Sigma":2,
                 "E1":2,
                 "C2":0.5,
                 "E2":2,
-                "Width":320,
-                "Height":180,
+                "Width":256,
+                "Height":256,
                 "Edge":0,       // 0:Reflect
                 "Mode":0,       // 0:Gradient
                 "Scale":4,
@@ -1090,8 +1090,6 @@ input {
 }
 
 
-
-/* Rounded edge panels. */
 .card-square {
     padding: 0;
     margin: 0;
@@ -1100,9 +1098,10 @@ input {
     border-color: #888;
     box-shadow: 3px 6px 5px rgba(0, 0, 0, 0.3);
 }
+
 .card-rounded {
     padding: .5em 1em .5em 1em;
-    margin: .5em;
+    margin: .25em;
     border-style: solid;
     border-width: 1px;
     border-radius: 7px;
@@ -1252,24 +1251,16 @@ input {
     text-shadow: 1px 1px #000000;
 }
 
-#canvas_area {
+.canvas_area {
+    display: block;
+    padding: 0;
+    margin: 1em;  
+}
+.canvas {
+    height: calc(100vh - 13em);
     width: 100%;
-    height: calc(100vh - 15em);
+    object-fit: contain;
 }
-#canvas-area canvas {
-    width: 100%;
-    height: 100%;
-}
-/*
-#canvas-area:hover{
-  cursor: crosshair;
-}
-#canvas-area:hover .coords{
-  display: block;
-}
-*/
-
-
 
 
 .speed_slider {
@@ -1302,6 +1293,7 @@ input {
     padding: .2em 2em .2em 2em;
     margin-bottom: .5em;
     box-shadow: 3px 6px 5px rgba(0, 0, 0, 0.3);
+    line-height: 1.0;
 }
 .tooltip:hover .tooltip-content {
     display: block;
@@ -1668,10 +1660,13 @@ New Wave:  U = U * fb                 ;With feedback.
             <br>
             <div style="padding-left: 2em; line-height: 2.0;">
                 1.&nbsp;&nbsp;g = gaussian(u,
-                <input id="Sigma"
-                       type="text" size="4"
-                       onchange="set_value(this.id, parseFloat(this.value))"
-                       name="Sigma">)
+                <div class="tooltip">               
+                    <input id="Sigma"
+                           type="text" size="4"
+                           onchange="set_value(this.id, parseFloat(this.value))"
+                           name="Sigma">)
+                    <div class="tooltip-content">Sigma</div>
+                </div>
                 <br>
                 2.&nbsp;&nbsp;a = g - u
                 <br>
@@ -1680,15 +1675,21 @@ New Wave:  U = U * fb                 ;With feedback.
                 4.&nbsp;&nbsp;w = u + a + m
                 <br>
                 5.&nbsp;&nbsp;r =
-                <input id="C1"
-                       type="text" size="6"
-                       onchange="set_value(this.id, parseFloat(this.value))"
-                       name="C1"/>
+                <div class="tooltip">                
+                    <input id="C1"
+                           type="text" size="6"
+                           onchange="set_value(this.id, parseFloat(this.value))"
+                           name="C1"/>
+                    <div class="tooltip-content">C1</div>
+                </div>
                 + |m + a|^
-                <input id="E1"
-                       type="text" size="3"
-                       onchange="set_value(this.id, parseFloat(this.value))"
-                       name="E1">
+                <div class="tooltip">
+                    <input id="E1"
+                           type="text" size="3"
+                           onchange="set_value(this.id, parseFloat(this.value))"
+                           name="E1">
+                    <div class="tooltip-content">E1</div>
+                </div>
                 <br>
                 
                 <div class="row middle">
@@ -1698,19 +1699,26 @@ New Wave:  U = U * fb                 ;With feedback.
                     <div class="col fit-content">
                         <div class="row center">
                             (r + 
-                            <input id="C2"
-                                   type="text" size="4"
-                                   onchange="set_value(this.id, parseFloat(this.value))"
-                                   name="C2">
+                            <div class="tooltip">
+                                <input id="C2"
+                                       type="text" size="4"
+                                       onchange="set_value(this.id, parseFloat(this.value))"
+                                       name="C2">
+                                <div class="tooltip-content">C2</div>
+                            </div>
                             )
                         </div>
                         <hr style="margin:0; padding:0;">                   
                         <div class="row">
                             (r + |u + a - m/r|^
-                            <input id="E2"
-                                   type="text" size="3"
-                                   onchange="set_value(this.id, parseFloat(this.value))"
-                                   name="E2">)
+                            <div class="tooltip">
+                                <input id="E2"
+                                       type="text" size="3"
+                                       onchange="set_value(this.id, parseFloat(this.value))"
+                                       name="E2">
+                                <div class="tooltip-content">E2</div>
+                            </div>
+                            )
                         </div>
                     </div>
                 </div>
@@ -1762,14 +1770,14 @@ New Wave:  U = U * fb                 ;With feedback.
             </script>
         </div>
 
-
     </td>  <!-- End column 1 -->
 
+    
     <td class="fit-rest">
         <div style="margin:.5em;">
-            <div id="canvas-area">
+            <div id="canvas-area" class="canvas-area">
                 <div id="coords" class="coords green">x, y</div>               
-                <canvas id="canvas"
+                <canvas id="canvas" class="canvas"
                         onmousemove="onMouseMove(event)"
                         onmouseleave="onMouseLeave()">
                 </canvas>
@@ -1809,9 +1817,7 @@ New Wave:  U = U * fb                 ;With feedback.
                         }
                     }
                 </script>                
-            </div>
-
-            
+            </div> 
         </div>
     </td>  <!-- End column 2 -->
 
@@ -1832,7 +1838,7 @@ New Wave:  U = U * fb                 ;With feedback.
             <div>
                 <button onclick="copy_url()">Copy URL+Values</button>      
                 <button onclick="copy_values()">Copy Values</button>
-                <button onclick="document.getElementById('canvas-area').requestFullscreen()"> Full Screen </button>
+                <button onclick="document.getElementById('canvas').requestFullscreen()"> Full Screen </button>
             </div>
         </div>
     </td>
@@ -1840,4 +1846,3 @@ New Wave:  U = U * fb                 ;With feedback.
     </table>
 </body>
 </html>
-
