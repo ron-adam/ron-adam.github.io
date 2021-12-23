@@ -971,7 +971,7 @@ body {
 
 h1 {
     margin: 0;
-    padding: .25em;
+    padding: 0;
 }
 h2 {
     margin: 0;
@@ -1233,16 +1233,22 @@ input {
     text-shadow: 1px 1px #000000;
 }
 
-.canvas_area {
-    padding: 0;
-    margin: 0;
+.canvas-container{
+    display: inline-block;
+    width: 100%;  
+    height: 100%;
+}
 
+.canvas-area {
+    display: block;
+    width: 100%;
+    height: 35em;
+    /* height: calc(100vh - 10em); */
 }
 .canvas {
     width: 100%;
-    height: 100%;
-   /* height: calc(100vh - 13em);    
-    object-fit: contain; */ 
+    height: 100%;   
+    object-fit: contain;
 }
 
 
@@ -1760,9 +1766,9 @@ New Wave:  U = U * fb                 ;Amplitude with feedback.
 
     
     <td class="fit-rest">
-        <div style="margin:.5em;">
+        <div id="canvas-container" class="canvas-container">
             <div id="canvas-area" class="canvas-area">
-                <div id="coords" class="coords green">x, y</div>               
+                <div id="coords" class="coords green">x, y</div>
                 <canvas id="canvas" class="canvas"
                         onmousemove="onMouseMove(event)"
                         onmouseleave="onMouseLeave()">
@@ -1775,30 +1781,51 @@ New Wave:  U = U * fb                 ;Amplitude with feedback.
                     
                     function onMouseMove(e){
                         var coord_div = document.getElementById('coords')
-                        var canvas = document.getElementById('canvas')
-                        if (VALUES["Animating"]==0){
-                            canvas.style.cursor = 'crosshair'
-                            coord_div.style.display = 'block'
-                            var rect = canvas.getBoundingClientRect()
-                            var width = canvas.clientWidth
-                            var height = canvas.clientHeight
-                            var x = (e.x - rect.left) * VALUES['Width']/width
-                            var y = (e.y - rect.top) * VALUES['Height']/height                                                        
-                            //coord_div.style.display = 'block'
-                            if (e.x > rect.right - 80) {
-                                coord_div.style.left = e.x - 75 + 'px' 
-                            } else {
-                                coord_div.style.left = e.x + 16 + 'px' 
+                        var ca = document.getElementById('canvas-area')
+                        if (VALUES["Animating"]==0){                           
+                            var rect = ca.getBoundingClientRect()
+                            var aw = ca.clientWidth
+                            var ah = ca.clientHeight
+                            var mx = (e.x - rect.left) //mouse pos
+                            var my = (e.y - rect.top)  //mouse ops
+                            var cw = VALUES['Width']
+                            var ch = VALUES['Height']
+                            var x = mx/aw * cw
+                            var y = my/ah * ch
+                            
+                            if (aw/ah > cw/ch){
+                                // Window wider than canvas,
+                                // scale to width - left padding.
+                                var w = cw/ch * ah
+                                var pad = (aw/w * cw - cw)/2
+                                x = mx/w * cw - pad
+                                // y is ok
+                            }else{
+                                // Window taller than canvas,
+                                // scale to height - top padding.
+                                var h = ch/cw * aw
+                                var pad = (ah/h * ch - ch)/2                                
+                                y = my/h * ch - pad
+                                // x is ok
                             }
-                            if (e.y > rect.bottom - 35) {
-                                coord_div.style.top = e.y - 32 +'px'
-                            } else {
-                                coord_div.style.top = e.y + 16 +'px' 
+                            if (x>=0 && x<=cw && y>=0 && y<=ch) {
+                                if (e.x > rect.right - 80) {
+                                    coord_div.style.left = e.x - 75 + 'px' 
+                                } else {
+                                    coord_div.style.left = e.x + 16 + 'px' 
+                                }
+                                if (e.y > rect.bottom - 35) {
+                                    coord_div.style.top = e.y - 32 +'px'
+                                } else {
+                                    coord_div.style.top = e.y + 16 +'px' 
+                                }
+                                coord_div.innerHTML = x.toFixed(0)+", "+y.toFixed(0)
+                                coord_div.style.display = 'block'
+                                canvas.style.cursor = 'crosshair'
+                            }else{
+                                coord_div.style.display = 'none'
+                                canvas.style.cursor = 'default'
                             }
-                            coord_div.innerHTML = x.toFixed(0)+", "+y.toFixed(0)                             
-                        }else{
-                            coord_div.style.display = 'none'
-                            canvas.style.cursor = 'default'
                         }
                     }
                 </script>                
