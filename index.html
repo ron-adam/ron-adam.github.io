@@ -19,8 +19,6 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1">
 
-
-
 <script>   
 /* ---- WEBGL SHADERS ----------------------- */
 
@@ -352,10 +350,10 @@ const UNIFORMS = new Set(["Sigma", "C1", "E1", "C2", "E2", "uE2"])
 
 
 const ColorLUT = new Uint8Array([            
-    255, 100, 100, 128,
-    255, 0,   0,   255, 
+    200, 100, 100, 128,
+    200, 0,   0,   255, 
     0,   0,   0,   255,
-    0,   0,   255, 255,
+    50,   50,   255, 255,
     100, 100, 255, 128,
 ]);
     
@@ -489,7 +487,8 @@ function main() {
     timer = setInterval(update_info, 500)
 
     // Key listener for display control.
-    const box = document.querySelector(".canvas")
+    const box = document.querySelector(".canvas")    
+    
     document.addEventListener("keydown", e => {
         if (e.target.id=='' && e.keyCode==32){
             if (VALUES["Animating"]){
@@ -507,6 +506,7 @@ function main() {
     
     reset_values()
     pause()
+    resize_area()
     animate()
 }
 
@@ -518,6 +518,16 @@ function createShader(gl, type, source){
         return shader
     console.log(gl.getShaderInfoLog(shader))
     gl.deleteShader(shader)
+}
+    
+function resize_area() {
+        var header = document.getElementById('header').getBoundingClientRect()
+        var footer = document.getElementById('footer').getBoundingClientRect()
+        var column1 = document.getElementById('column1').getBoundingClientRect()
+        var canvas_area = document.getElementById('canvas-area')
+        var VH = document.documentElement.clientHeight
+        canvas_area.style.height = Math.max(VH - footer.height - header.height - 32,
+                                            column1.height - 32) + 'px'
 }
 
 function set_grid_size(size){
@@ -677,11 +687,11 @@ function set_edge_mode(mode) {
 
 function random_values(){
     Math.seed = Date.now()
-    set_value("Sigma", Math.seededRandom(1.0, 5.0).toPrecision(3))
-    set_value("C1", Math.seededRandom(1.0, 20.0).toPrecision(3))
-    set_value("C2", Math.seededRandom(0.1, 4.0).toPrecision(3))
-    set_value("E1", Math.seededRandom(0.25, 3.0).toPrecision(3))
-    set_value("E2", Math.seededRandom(0.25, 3.0).toPrecision(3))
+    set_value("Sigma", Math.seededRandom(1.0, 4.0).toPrecision(3))
+    set_value("C1", Math.seededRandom(1.0, 10.0).toPrecision(3))
+    set_value("C2", Math.seededRandom(0.1, 2.0).toPrecision(3))
+    set_value("E1", Math.seededRandom(1.0, 3.0).toPrecision(3))
+    set_value("E2", Math.seededRandom(1.0, 3.0).toPrecision(3))
     //set_image()
 }
 
@@ -814,7 +824,7 @@ function make_image(){
     var W = VALUES["Width"]
     var H = VALUES["Height"]
     var image = new Float32Array(4 * W * H)
-    var n = Math.round(Math.seededRandom(2, 20))  // More doesn't help.
+    var n = Math.round(Math.seededRandom(1, 6))  // More doesn't help.
     for (var p=0; p<n; p++){
         // Insert a random pair.
         var h = Math.seededRandom(W/100, W/20)
@@ -951,9 +961,10 @@ function set_value(id, val){
 body {
     background-color: #d8d8dd;
     height: 100%;
-    width: calc(100vw - 1.5em);
+    max-width: 95vw;
+    /*width: calc(100vw - 1.5em);*/
     padding: 0;
-    margin: 0;
+    margin: auto;
     
     /* let curser be changed */
     -webkit-touch-callout: none;
@@ -1066,7 +1077,7 @@ input {
     margin: .5em;
 }
 
-.footer {
+#footer {
     padding: .5em 1em .5em 1em;
     margin: .5em;
 }
@@ -1242,8 +1253,8 @@ input {
 .canvas-area {
     display: block;
     width: 100%;
-    height: 35em;
-    /* height: calc(100vh - 10em); */
+    /* height: 35em; */
+    height: 10em;
 }
 .canvas {
     width: 100%;
@@ -1292,17 +1303,17 @@ input {
 
 
 </head>
-<body onload="main()">
+<body onload="main()" onresize="resize_area()">
 
     <table class="page">
 
-        <tr>
+        <tr id="header">
             <td colspan="2">
                 <div class='card-rounded grad-blue middle space-between'>
 
                     <div>
                         <h1 class="teal">Simulation of Quantified Waves in 2D</h1>
-                    </div>
+                    </div><br><br>
                     <div>
                         <!-- Trigger to Open the Modal -->
                         <button onclick="document.getElementById('help').style.display='block'">Help</button>
@@ -1602,10 +1613,10 @@ New Wave:  U = U * fb                 ;Amplitude with feedback.
             </td>
         </tr>
 
-<!-- Content ============================================================ -->
 
-<tr>
-    <td class="fit-width">
+
+<tr id="main-content">
+    <td id='column1' class="fit-width">
         
         <div class="card-rounded grad-grey small">
             <span class="tab14 green">Array Size:</span>
@@ -1765,7 +1776,7 @@ New Wave:  U = U * fb                 ;Amplitude with feedback.
     </td>  <!-- End column 1 -->
 
     
-    <td class="fit-rest">
+    <td id="column2" class="fit-rest">
         <div id="canvas-container" class="canvas-container">
             <div id="canvas-area" class="canvas-area">
                 <div id="coords" class="coords green">x, y</div>
@@ -1835,7 +1846,7 @@ New Wave:  U = U * fb                 ;Amplitude with feedback.
 
 </tr>  <!-- End main content row -->
 
-<tr>
+<tr id="footer">
     <td colspan='2'>
         <div class="card-rounded grad-blue small space-between middle">
             <div>
