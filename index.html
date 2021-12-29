@@ -330,8 +330,8 @@ const VALUES = {"Sigma":2,
                 "E1":2,
                 "C2":0.5,
                 "E2":2,
-                "Width":320,
-                "Height":180,
+                "Width":256,
+                "Height":256,
                 "Edge":0,       // 0:Reflect
                 "Mode":0,       // 0:Gradient
                 "Scale":4,
@@ -342,6 +342,8 @@ const VALUES = {"Sigma":2,
                 "FrameTime":0,
                 "Seed":0,
                }
+               
+const IVALUES = {...VALUES}
 
 // Catagories for response.
 const MODE = ["Gradient", "Amplitude", "Momentum", "Acceleration"]
@@ -391,8 +393,10 @@ function main() {
     canvas = document.getElementById("canvas")
     
     set_values_from_url()  // If any.
-     
-    // Size is be reset later.
+    //IVALUES = {...VALUES}
+    Object.assign(IVALUES, VALUES);
+    
+        // Size is be reset later.
     canvas.width = VALUES["Width"]
     canvas.height = VALUES["Height"]
 
@@ -490,17 +494,41 @@ function main() {
     const box = document.querySelector(".canvas")    
     
     document.addEventListener("keydown", e => {
-        if (e.target.id=='' && e.keyCode==32){
-            if (VALUES["Animating"]){
-                pause()
-            }else if (VALUES['Direction']>0){
-                forward()
-            }else{
-                reverse()
+        var key = e.key
+        if (key==" "){
+            if (e.target.id==''){ 
+                if (VALUES["Animating"]){
+                    pause()
+                }else if (VALUES['Direction']>0){
+                    forward()
+                }else{
+                    reverse()
+                }
             }
-        }
-        if (e.keyCode== 82){
+        }else if (["q", "Q"].includes(key)) {
+            /* Random values */
             random_values()
+        }else if (['r', 'R'].includes(key)) {
+            /* Reset */
+            reset_values()
+        }else if (key=='ArrowUp') {
+            set_speed(VALUES['Speed'] * 1.1)
+        }else if (key=='ArrowDown') {
+            set_speed(VALUES['Speed'] * .9)
+        }else if (key=='ArrowLeft') {
+            set_scale(VALUES['Scale'] * .9)
+        }else if (key=='ArrowRight') {
+            set_scale(VALUES['Scale'] * 1.1)
+        }else if (key=='1') {
+            set_display_mode(0)
+        }else if (key=='2') {
+            set_display_mode(1)
+        }else if (key=='3') {
+            set_display_mode(2)
+        }else if (key=='4') {
+            set_display_mode(3)
+        }else{
+            console.log(key)
         }
     })
     
@@ -913,9 +941,9 @@ function set_values_from_url() {
 }
 
 function reset_values() {
-    set_grid_size(`${VALUES["Width"]}, ${VALUES["Height"]}`)
+    set_grid_size(`${IVALUES["Width"]}, ${IVALUES["Height"]}`)
     for (id in VALUES) {
-        set_value(id, VALUES[id]);
+        set_value(id, IVALUES[id]);
     }
 }
 
@@ -962,11 +990,10 @@ body {
     background-color: #d8d8dd;
     height: 100%;
     max-width: 95vw;
-    /*width: calc(100vw - 1.5em);*/
     padding: 0;
     margin: auto;
     
-    /* let curser be changed */
+    /* lets curser be changed */
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -1000,17 +1027,6 @@ h4 {
     padding: 0 1em 0 0;
     margin: 0;
 }
-pre {
-    background-color: white;
-    color: black;
-    font-size: 1em;
-    font-family: "Lucida Console", Courier, monospace;
-    border-width: 1px;
-    border-radius: 9px;
-    border-color: #bbbbbb;
-    border-style: solid;
-    padding: 1em;
-}
 button {
     display: inline-block;
     height: -moz-fit-content;
@@ -1038,7 +1054,7 @@ input {
 }
 .grad-gold {
     color: #006;
-    background-image: linear-gradient(to bottom right, #ffffff, #fffffe, #eeeeee);
+    background-image: linear-gradient(to bottom right, #ffffff, #eeeedd, #dddddd);
 }
 .grad-grey {
     color: #006;
@@ -1109,32 +1125,33 @@ input {
     display: none;
     position: fixed;
     z-index: 2;
-    left: calc(100% - 55em);
-    top: 1em;
-    width: 50em;
+    left: calc(100% - 45em);
+    width: 40em;
+    top: .5em;
+    height: calc(100vh - 3.5em);
+    padding: .5em 1em .5em 1em;    
+    background-color: grey;
 }
-.modal-content {
-    display: inline-block;
-    background-color: #eeeeee;
-    margin: 0;
-    padding: .25em;
-    border: 1px solid #888;
-    width: auto;
+.modal-header {
+    display: block;
+    height: 4em;
+    width: 38em;
+    color: teal;
 }
-.scroll {
-    display: inline-block;
-    background-color: #fafaf8;
-    color: #003000;
-    height: calc(100vh - 9em);
-    width: auto;
+.modal-scroll {
+    display: block;
+    position: fixed;
+    background-color: #f8f8f8;
+    width: 38em;
+    top: 5em;
+    height: calc(100vh - 9.5em);
     overflow-y: scroll;
     text-align: left;
     padding: 1em;
-}
-#about-text {
-    display: inline-block;
-    padding: 2ch;
-    margin: 0;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 3px;
+    border-color: #888888;
 }
 
 
@@ -1312,304 +1329,147 @@ input {
                 <div class='card-rounded grad-blue middle space-between'>
 
                     <div>
-                        <h1 class="teal">Simulation of Quantified Waves in 2D</h1>
+                        <h1 class="teal">Quantized Energy Behavior From Waves</h1>
                     </div><br><br>
                     <div>
                         <!-- Trigger to Open the Modal -->
-                        <button onclick="document.getElementById('help').style.display='block'">Help</button>
-                        <button onclick="document.getElementById('details').style.display='block'">Details</button>        
-                        <button onclick="document.getElementById('about').style.display='block'">About</button>
+                        <button onclick="document.getElementById('help-page').style.display='block'">Help</button>
+                        <button onclick="document.getElementById('details-page').style.display='block'">Details</button>        
+                        <button onclick="document.getElementById('about-page').style.display='block'">About</button>
                     </div>
 
-                    <!-- The Modal -->
-                    <div id="details" class="modal">
-                        <div class="modal-content">
-                            <div class="header middle space-between grad-gold card-rounded">
-                                <div>
-                                    <h2 class="medium teal">QLET - A BEHAVIOUR IN WAVES THAT QUANTIZES ENERGY.</h2>
-                                </div>
-                                <div>
-                                    <button onclick="document.getElementById('details').style.display='none'">Close</button>
-                                </div>
-                            </div>
-                            <div class="content scroll card-rounded">
-                                <h4>
-                                    AUTHOR: RONALD R. ADAM<br>
-                                    DATE:   12-5-2021
-                                </h4>
-                                <p>
-                                    Welcome to my QLet 2D wave behavior explorer.  I created
-                                    this project as an attempt to see if I could find particle
-                                    like behaviors in waves.  The availability of fast computers
-                                    with parallel graphic processors makes it possible to try
-                                    many different formulations and see how they act.
-                                </p>
-                                <h4>THE GOAL:</h4> 
-                                <p>
-                                    To identify particle like wave behaviors
-                                    in waves with feedback from the waves motion.
-                                </p>
-                                <br>
-
-                                <h3>1. WHAT IS A QLET?</h3>
-                                <p>
-                                    A QLet is a name I'm using to describe the occurence of
-                                    phase vortex's in 2D waves. Phase vortex's are currently
-                                    being studied in optics and quantum physics.
-                                </p>
-                                <p>
-                                    <a href="https://en.wikipedia.org/wiki/Quantum_vortex">Quantum Vortex</a><br>
-                                    <a href="https://en.wikipedia.org/wiki/Optical_vortex#:~:text=Columns%20show%20the%20helical%20structures%2C%20phase-front%20and%20intensity,light%20that%20has%20such%20a%20zero%20in%20it.">
-                                        Optical vortex</a>
-                                </p>
-                                <p>
-                                    The term QLet is use here to describe the <b>behavior</b>
-                                    of waves where they form phase vortex's.  So A QLet isn't
-                                    an object as we normally think of them. It's a specific
-                                    behavior, which has particle like relationships included
-                                    with it, but isn't a full particle in itself. It may
-                                    be possible to identify such behaviors in other processes.
-                                </p>
-                                <p>
-                                    Some of these behaviors include attraction, repelling, quantifying
-                                    wave energy. They also combine with other QLets to form more
-                                    complex forms.  They normally form in opposite spin
-                                    pairs.
-                                </p>
-                                <p>
-                                    There are some interesting behaviors regarding the phase
-                                    of QLets.  The phase is maintained between the nearest
-                                    QLets, and as they move around they exchange phase partners
-                                    in a way that resembles dancing.
-                                </p>
-                                <p>
-                                    The advantage of QLets as simulated here is that they can
-                                    be easily produced and studied.
-                                </p>
-                                <br>
-
-                                <h3>2. THE WAVE SIMULATION:</h3>
-                                <p>
-                                    In this simulation a wave is changing values in a smooth and
-                                    continuous field.  Each point in the grid should be thought
-                                    of as samples in the field at the location of the
-                                    coordinates. The values between the coordinates will be a
-                                    smooth curve connecting the grid points.
-                                </p>
-                                <p>
-                                    The simulation always keeps the last four frames in memory.
-                                    Only the last two are needed for calculating the wave motion. The
-                                    other two help with visualizing and interpreting the results.
-                                </p>
-                                <p>
-                                    The normal waves have the property:
-                                </p>
-                                <pre>
-Where:  U  is the frame being calculated.
-        U1 is the previous frame.
-        U2 is the frame before that.
-
-And:    amplitude = U1
-        momentum = U1 - U2
-        acceleration = gaussian(U1) - U1
-
-Then:   U = amplitude + momentum + acceleration
-                                </pre>
-                                <p>
-                                    By taking the diffence of the last two wavestates, it's
-                                    possible to get the sum of all wave differentials at once.
-                                    Use of a gaussian smoothing function gives a good
-                                    approximation of dispersion of wave energy. The dispersion
-                                    minus the last wave state represents the vertical
-                                    acceleration force on the waves. This too works for all
-                                    superimposed waves at once. This describes how each point in
-                                    the wave field evolves in time with no feedback.
-                                </p>
-                                <br>
-
-                                <h3>4. ADDING FEEDBACK FROM WAVE MOTION:</h3>
-                                <p>
-                                    In the process of developing this, many attempts to add
-                                    feedback and maintain the wave balance and integrity was
-                                    tried.  Most did not work and resulted in invalid results.
-                                </p>
-                                <p>
-                                    The process involved varying the array by shifting the
-                                    values that are available up or down equally, but in
-                                    different sub-ranges within the amplitude range.
-                                </p>
-                                <p>
-                                    Several methods have been tried, one that was interesting is
-                                    to clip the arrays at some level below the maximum.  This
-                                    was discounted because it is believed it is not how
-                                    natural waves work.  Although it may be relevant in places
-                                    that have conditions that limit the freedom the waves can
-                                    have.
-                                </p>
-                                <p>
-                                    Which leaves spring like modifications and exponential
-                                    shaping. And if these waves exist in free space, they will
-                                    also respond to values associated with relativity.
-                                </p>
-                                <p>
-                                    With only the last few frames available, we have a
-                                    relatively small set of values to draw from. So the method
-                                    used to derive the feedback expression was to start altering
-                                    the values involved and observe what worked and what did not.
-                                    Over the course of a year, the two lines below emerged as a
-                                    solution that resulted in the most complex and varied
-                                    behaviors with well behaved results.  It was found a bit
-                                    later that using a Gaussian_filter instead of the Del
-                                    operator enabled scaling the QLets behaviors nicely. And
-                                    then the formula was improved in a number of steps.
-                                </p>
-                                <p>
-                                    The feedback 'fb' includes acceleration and momentum with the
-                                    amplitude.
-                                </p>
-                                <pre>
-Where:     U  is the frame being calculated.
-           U1 is the previous frame.
-           U2 is the frame before that.
-
-And:       U1                         ;Amplitude Of last frame.
-           m = U1 - U2                ;Difference from previous frame.
-           a = gaussian(U1) - U1      ;Gaussian difference.
-
-Next Wave: U = U1 + m + a             ;Amplitude without feedback.
-
-Feedback:  r = 2.0 + (a + m)^2
-           fb = (r + .5) / (r + (U1 + a - m/r)^2
-
-New Wave:  U = U * fb                 ;Amplitude with feedback.
-                                </pre>
-                                <br>
-
-                                <h3>5. NOTES REGARDING THE FORMULA</h3>
-                                <p>
-                                    The first '2.0' value, (constant 1 or C1), is a scaler where larger values
-                                    reduce the effect of the other terms.  It can be increased
-                                    to the point where the whole expression has little effect.
-                                </p>
-                                <p>
-                                    The '0.5' value, (constant 2 or C2), is a pivot for for the expression.  As the
-                                    amplitude increases below or above it, the force to 
-                                    return to center relative to the area around it increases.
-                                    So this acts like a membrane as often pictured in relativity.
-                                </p>
-                                <p>
-                                    The term (a + m)^2 is the velocity of change of the amplitude.
-                                    As this velocity increases,  it lessons the pull of the
-                                    amplitude has back to balance condition. The effect is a
-                                    wave takes longer to return. So an increase in vertical wave
-                                    speed result in a slowing of the horizontal speed. This is the
-                                    cause of increased curl in the waves as low amplitude waves
-                                    travel streighter, but high amplitude waves relative to the
-                                    wave length curl around each other.
-                                </p>
-                                <p>
-                                    The whole expression increases the force from that of the
-                                    ideal perfect wave motion.  Because it varies from 1.0,
-                                    proportional to the wave motion, it can simply be multiplied
-                                    with the amplitude to get the total wave value for the next
-                                    time step.
-                                </p>
-                                <p>
-                                    You may notice time isn't represented in the equation, it's 
-                                    value is always 1.0 in the stepwise direction, and so it
-                                    either cancels out or is dropped. So time becomes implicit
-                                    in the waves relative to both the gaussian Sigma value and
-                                    the characteristics of the feedback tension as the wave moves.
-                                </p>
-                                <p>
-                                    This sigma value used in the Gaussian filter determines the
-                                    size of the convolution kernel. So larger sigma values increase
-                                    the force the surrounding space has on each point.  But it
-                                    also is normalized, so it decreases the force at the location
-                                    it is calculated at.  So wider and lower.  This has the effect
-                                    of scaling everything up or down.  A larger sigma value makes
-                                    the waves lower and wider.  And smaller values result in small
-                                    convolution kernels with steep sides, so everything gets smaller.
-                                </p>
-                                <p>
-                                    There are some practical limits. Sigma values below 0.5, don't
-                                    have enough information to work correctly. A way around this is
-                                    to increase the grid size and keep the sigma at levels where it
-                                    is more accurate.
-                                </p>
-                                <p>
-                                    No skipped computation steps.  The finite difference method has
-                                    as nice property where at unit time steps, it results in
-                                    perfect solutions. That statement should be taken to mean
-                                    perfect in regards to the quality of the information used.
-                                </p>
-                                <p>
-                                    It is this property which gives results that seem to exceed the 
-                                    resolution of the grid.  But it only works if every step
-                                    is calculated without attempting to skip ahead. The speed of
-                                    the program is controlled by increasing the number of steps
-                                    between each displayed image.  Not by increasing a time factor
-                                    between steps.
-                                </p>
-                                <p>
-                                    Tests for neutral waves with no feedback results in perfect 
-                                    solutions at each grid point. And works at extreme levels of
-                                    amplitude and superposition.
-                                </p>
-                                <p>
-                                    You can test this yourself by setting the value of the
-                                    first constant to one million which will effectively reduces
-                                    the effect all other terms have.  Then run it ahead a few
-                                    thousand frames.  Then reverse it back.  It will recover the
-                                    starting image nearly perfectly.  If the feedback
-                                    is turned completely off, it recovers the image exactly.
-                                </p>
-                                <br>
-
-                                <h3>5. PROGRAM NOTES:</h3>
-                                <p>
-                                    To analyze the results it was thought that particle like
-                                    structures would have more extreme amplitude changes at the
-                                    boundaries where they exist. Those characteristics can be
-                                    easy visible if the waves are viewed with a gradient filter.
-                                    This was confirmed to work very Well.
-                                </p>
-                                <p>
-                                    The program is designed to allow changing the size of the
-                                    arrays, the Sigma value used in the Gaussian filter, the two
-                                    constants (2.0 and .5) and the two exponents. Many times it
-                                    results in either an all white or black screen, and
-                                    adjusting the amplitude color scale up or down will resolve
-                                    that.
-                                </p>
-                                <p>
-                                    A note about update and video frequencies.  Modern video
-                                    displays have limits.  And it's not needed to refresh the
-                                    display as fast as possible.  So in between each video
-                                    refresh, multiple array refreshes can take place.  This creates
-                                    a timing light like relationship on the display, where you
-                                    can sync the speed to the waves and they appear to  stop or
-                                    reverse direction.  But they in fact are moving extremely
-                                    fast. That effect has a nice benefit because it lets you see
-                                    things happening that otherwise would not be visible.
-                                </p>
-                                <p>
-                                    Also keep in mind this may run extremely slow on older
-                                    computers and devices.  Keeping the Sigma values and array
-                                    sizes small at first is a good idea.
-                                </p>
-                                <p>
-                                    If you find bugs or know of a way to improve this, please
-                                    contact me through the source you received it from.
-                                </p>
-                                <h4>
-                                    Ron Adam  <a href = "mailto: ron3200@gmail.com">Send Email</a>
-                                </h4>
+                    <div id="help-page" class="modal card-rounded grad-gold">
+                        <div class="modal-header middle space-between">
+                            <h2>Help</h2>
+                            <div>
+                                <button onclick="document.getElementById('help-page').style.display='none'">Close</button>
                             </div>
                         </div>
-                    </div>
+                        <div class="modal-scroll">
+                            <pre>
+    SETUP:
+	Size:   Width and height seperated by any non numeric
+                character.
 
+        Mode:
+            *   Gradient – Colors represent the length of the
+                    gradient of the field.
+            *   Amplitude – Colors represent positive and negative
+                    deflection from zero.
+            *   Momentum – Colors represent differnce of
+                    amplitude from previous frame.
+            *   Acceleration – Colors represent the force acting on
+                    the amplitude from the surrounding field.
+
+        Edge:
+            *   Reflect – Edges reflect values near them.
+            *   Wrap – Edges get values from opposite side.
+            *   Rounded – Locations further than a radius from the
+                    center of each side are set zero.
+
+        Seed:   Seed for random number generator used to produce
+                image.
+
+        Reset Image Button:  Reset image by current seed value.
+
+        Random Image Button:  Pick a random seed value and
+                produce a new image.
+
+    FORMULA:
+	*   Sigma   Radius of Gaussian kernal
+	*   C1  Constant1, Larger values reduce the effect of the
+                    other variables.
+	*   E1  Exponent1, applied to amplitude change velocity. 
+	*   C2  Constent2, Tension pivot value.
+	*   E2  Exponent2, applied to adjusted amplitude term.
+        
+        Reset Values Button: Restore values to initial state.
+        
+        Random Values Button: Try random values.
+            
+    SPEED:
+        *   Adjust the speed of the simulation.
+        *   <<  Reverse direction of waves.
+        *   #   Pause
+        *   >>  Forward direction of waves.
+
+        Notes:
+            + Screen refresh and simulation speed interaction
+              acts similar to a strobe light.
+            + While simulation is paused array pointer displays
+              array coordinate position.
+
+    SCALE:
+        *   Set the upper limit of the amplitude the color values
+            are based on.
+        Notes:
+            + A dark screen results if the upper limit is
+              significantly above the average values.
+            + A light screen results if the upper limit is near
+              or below the average values.
+
+    Copy Values Button:  Copy current values to the clip board as text,
+
+    Copy URL+Values Button:   Copy current values as a URL to the clip board
+                for sharing.
+
+    Full Screen Button:  Switch to full screen mode.  (Use escape to exit.)
+  
+    KEYBOARD COMMANDS:
+	*   Space   Pause/Play
+	*   Q       Random Values
+        *   R       Reset Values
+        *   1       Gradient Length Mode
+        *   2       Amplitude Mode
+        *   3       Momentum (Amplitude change)
+        *   4       Acceleration (Amplitude acceleration force)
+        *   Escape  Exit Full Screen.
+                            </pre>
+                               
+                        </div>
+                    </div>
+                    
+                    <div id="details-page" class="modal card-rounded grad-gold">
+                        <div class="modal-header middle space-between">
+                            <h2>Detailed Information</h2>
+                            <div>
+                                <button onclick="document.getElementById('details-page').style.display='none'">Close</button>
+                            </div>
+                        </div>
+                        <div class="modal-scroll">
+                            <pre>
+    Detailed Information on how it works and why
+    will go here.
+                            </pre>
+                        </div>
+                    </div>
                 </div>
+                    
+                <div id="about-page" class="modal card-rounded grad-gold">
+                    <div class="modal-header middle space-between">
+                        <h2>Quantized Energy Behavior From Waves</h2>
+                        <div>
+                            <button onclick="document.getElementById('about-page').style.display='none'">Close</button>
+                        </div>
+                    </div>
+                    <div class="modal-scroll middle">
+                        <div style="display: block; width: 100%; text-align: center;">
+
+                            <h1>Quantized Energy Behavior From Waves</h1>
+
+                            <p>
+                                A simulation to explore and demonstrate a<br>
+                                mechanism for energy to quantify from waves.
+                            </p>
+                            <p>
+                                Version-1.0-6<br>
+                                Date: 12/28/2021<br>
+                                Copyright 2021 Ronald R. Adam
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
             </td>
         </tr>
 
@@ -1726,8 +1586,8 @@ New Wave:  U = U * fb                 ;Amplitude with feedback.
                     </div>
                 </div>
                 7. A = fb * w
-                
                 <div class="space-left">
+                    <button onMouseUp="reset_values()">Reset Values</button>
                     <button onMouseUp="random_values()">Random Values</button>
                 </div>
             </div>
