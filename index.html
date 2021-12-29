@@ -495,8 +495,8 @@ function main() {
     
     document.addEventListener("keydown", e => {
         var key = e.key
-        if (key==" "){
-            if (e.target.id==''){ 
+        if (e.target.id==''){        
+            if (key==" "){
                 if (VALUES["Animating"]){
                     pause()
                 }else if (VALUES['Direction']>0){
@@ -504,29 +504,29 @@ function main() {
                 }else{
                     reverse()
                 }
+            }else if (["q", "Q"].includes(key)) {
+                /* Random values */
+                random_values()
+            }else if (['r', 'R'].includes(key)) {
+                /* Reset */
+                reset_values()
+            }else if (key=='ArrowUp') {
+                set_speed(VALUES['Speed'] * 1.1)
+            }else if (key=='ArrowDown') {
+                set_speed(VALUES['Speed'] * .9)
+            }else if (key=='ArrowLeft') {
+                set_scale(VALUES['Scale'] * .9)
+            }else if (key=='ArrowRight') {
+                set_scale(VALUES['Scale'] * 1.1)
+            }else if (key=='1') {
+                set_display_mode(0)
+            }else if (key=='2') {
+                set_display_mode(1)
+            }else if (key=='3') {
+                set_display_mode(2)
+            }else if (key=='4') {
+                set_display_mode(3)
             }
-        }else if (["q", "Q"].includes(key)) {
-            /* Random values */
-            random_values()
-        }else if (['r', 'R'].includes(key)) {
-            /* Reset */
-            reset_values()
-        }else if (key=='ArrowUp') {
-            set_speed(VALUES['Speed'] * 1.1)
-        }else if (key=='ArrowDown') {
-            set_speed(VALUES['Speed'] * .9)
-        }else if (key=='ArrowLeft') {
-            set_scale(VALUES['Scale'] * .9)
-        }else if (key=='ArrowRight') {
-            set_scale(VALUES['Scale'] * 1.1)
-        }else if (key=='1') {
-            set_display_mode(0)
-        }else if (key=='2') {
-            set_display_mode(1)
-        }else if (key=='3') {
-            set_display_mode(2)
-        }else if (key=='4') {
-            set_display_mode(3)
         }else{
             console.log(key)
         }
@@ -1462,7 +1462,7 @@ input {
                                 mechanism for energy to quantify from waves.
                             </p>
                             <p>
-                                Version-1.0-7<br>
+                                Version-1.0-8<br>
                                 Date: 12/28/2021<br>
                                 Copyright 2021 Ronald R. Adam
                             </p>
