@@ -1389,7 +1389,7 @@ input {
             
     SPEED:
         *   Adjust the speed of the simulation.
-        *   <<  Reverse direction of waves.
+        *   &lt;&lt;  Reverse direction of waves.
         *   #   Pause
         *   >>  Forward direction of waves.
 
@@ -1462,10 +1462,23 @@ input {
                                 mechanism for energy to quantify from waves.
                             </p>
                             <p>
-                                Version-1.0-8<br>
+                                Version-1.0-9<br>
                                 Date: 12/28/2021<br>
                                 Copyright 2021 Ronald R. Adam
                             </p>
+                            <div id="contact" onMouseOver="contact()">Contact</div>
+                            <script>
+function contact(){
+    var p1 = "ron" + 32 * 5 * 20
+    var p2 = Math.pow(2,6)
+    var p3 = String.fromCharCode(p2)
+    var p4 = "gmail.com"
+    var p5 = p1 + String.fromCharCode(p2) + p4
+    var el = document.getElementById('contact')
+    el.innerHTML = "Please send email to: <a href=" + "mai" + "lto" + ":" + p5 + ">" + p1 + p3 + p4 + "</a>"
+}
+                            </script>
+                            
                         </div>
                     </div>
                 </div>
