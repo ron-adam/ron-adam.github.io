@@ -947,6 +947,13 @@ function reset_values() {
     }
 }
 
+function reset_eq_values() {
+    //set_grid_size(`${IVALUES["Width"]}, ${IVALUES["Height"]}`)
+    for (const id of UNIFORMS) {
+        set_value(id, IVALUES[id]);
+    }
+}
+
 function set_value(id, val){
     if (id in VALUES){
         if (UNIFORMS.has(id)){
@@ -1462,7 +1469,7 @@ input {
                                 mechanism for energy to quantify from waves.
                             </p>
                             <p>
-                                Version-1.0-9<br>
+                                Version-1.0-10<br>
                                 Date: 12/28/2021<br>
                                 Copyright 2021 Ronald R. Adam
                             </p>
@@ -1600,7 +1607,7 @@ function contact(){
                 </div>
                 7. A = fb * w
                 <div class="space-left">
-                    <button onMouseUp="reset_values()">Reset Values</button>
+                    <button onMouseUp="reset_eq_values()">Reset Values</button>
                     <button onMouseUp="random_values()">Random Values</button>
                 </div>
             </div>
@@ -1732,6 +1739,7 @@ function contact(){
                 <div class="tab16">Frame #: <span id="FrameCount" style="color:#0000a0"> 0 </span></div>
             </div>
             <div>
+                <button onclick="reset_values()">Reset Initial</button>                
                 <button onclick="copy_url()">Copy URL+Values</button>      
                 <button onclick="copy_values()">Copy Values</button>
                 <button onclick="document.getElementById('canvas').requestFullscreen()"> Full Screen </button>
