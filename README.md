@@ -7,6 +7,6 @@ These projects are fully copyrighted.  If you would like permission to use/publi
 (It's easier to start strick and be more lenient later as the need arises.)
 
 <h2>Project #1: Quantized Energy Behavior In Waves</h2>
-    A simulation adn tool to explore and demonstrate a mechanism for energy to quantify from waves.<br>
+    A simulation and tool to explore and demonstrate a mechanism for energy to quantify from waves.<br>
 
 <a href="http://ron-adam.github.io">Quantized Energy Behavior in Waves.</a>
