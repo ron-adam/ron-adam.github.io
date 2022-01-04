@@ -26,21 +26,18 @@
 
 const gaussian_sample = `
 vec4 sample_texture(sampler2D sampler, vec2 texCoord){
-    //texCoord -= 0.5;
     float dist = length(texCoord - 0.5);    // Distance from center.
+    float rd = 1.0;
     if ((uEdge == 2) && (dist > 0.49)) {
         // Mirror value from edge.
-        float rd = (.49 - (dist - .49))/dist;
+        rd = (.49 - (dist - .49))/dist;
         texCoord = vec2(0.5 + (texCoord.x - 0.5)*rd, 0.5 + (texCoord.y - 0.5)*rd);
-        return texture(sampler, texCoord) * rd;
     }else if ((uEdge == 3) && (dist > 0.49)) {
         // Use value on other side of curcle.
-        float rd = (0.49 - (dist - 0.49))/dist;
+        rd = (0.49 - (dist - 0.49))/dist;
         texCoord = vec2(0.5 + (0.5 - texCoord.x)*rd, 0.5 + (0.5 - texCoord.y)*rd);
-        return texture(sampler, texCoord);
-    } else{
-        return texture(sampler, texCoord);
     }
+    return texture(sampler, texCoord) * rd;
 }
     
 vec4 gaussian_sample(sampler2D sampler, vec2 texCoord, float sigma){
@@ -236,7 +233,7 @@ void main(void) {
         vec4 y = sample_texture(uSampler, TC);
         fragColor4 = vec4(y.g, y.b, y.a, 0.0);
     }else{
-        vec4 y = texture(uSampler, TC);
+        vec4 y = sample_texture(uSampler, TC);
         float U = y.a;
         float V = y.b;
         float m = U - V;
@@ -255,7 +252,6 @@ void main(void) {
 const FS_draw = `#version 300 es
 precision highp float;
 uniform highp sampler2D uSampler;
-uniform sampler2D uColor;
     
 uniform float uFrameTime;
 uniform float uScale;
@@ -271,6 +267,59 @@ ${gradient_sample}
 ${gaussian_gradient_sample}
 ${mpolate}
 
+vec4 amp_value_to_color(float v){ 
+    float r = 0.0;
+    float b = 0.0;
+    if (v>0.0) {
+        r = v;
+        b = pow(v, 3.0) * 0.95; 
+    }
+    if (v<0.0) {
+        b = abs(v);
+        r = pow(abs(v), 3.0) * 0.95;
+    }
+    float g = pow(abs(v), 4.0);
+    return vec4(r, g, b, 1.0);
+}
+
+vec4 mom_value_to_color(float v){ 
+    float r = 0.0;
+    float g = 0.0;
+    float b = 0.0;
+    if (v>0.0) {
+        // Blue
+        r = pow(abs(v), 2.0) * 0.95;
+        g = max(v/2.0, pow(v, 3.0)); 
+        b = pow(v, 0.75);
+    }
+    if (v<0.0) {
+        // Teal
+        r = pow(abs(v), 2.0) * 0.95;    
+        g = abs(v);
+        b = max(abs(v)/2.0, pow(abs(v), 3.0));
+    }
+    return vec4(r, g, b, 1.0);
+}
+
+vec4 acc_value_to_color(float v){
+    float r = 0.0;
+    float g = 0.0;
+    float b = 0.0;
+    if (v>0.0) {
+        // Gold
+        r = pow(v, 0.5);
+        g = pow(abs(v), 0.75);    
+        b = max(v, pow(v, 2.0)) * 0.5;
+    }
+    if (v<0.0) {
+        // Aqua
+        r = max(v, pow(v, 2.0)) * 0.5;    
+        g = pow(abs(v), 1.0);
+        b = pow(abs(v), 0.25);
+    }
+    return vec4(r, g, b, 1.0);
+}
+
 void main(void) {
     vec2 texSize = vec2(textureSize(uSampler, 0));
     vec2 TC = vTexCoord;
@@ -278,40 +327,38 @@ void main(void) {
     if (uEdge > 1 && (length(TC - 0.5) >= 0.485)) {
        discard;
     }
-
     if (uMode == 0) {
         // Gradient of amplitude.   
-        //vec4 y = gaussian_gradient_sample(uSampler, TC, 0.5);
-        vec4 y = gradient_sample(uSampler, TC);
+        vec4 y = gaussian_gradient_sample(uSampler, TC, 0.5);
+        //vec4 y = gradient_sample(uSampler, TC);
         float v = mpolate(y.a, y.b, y.g, 1.0 - uFrameTime);
         v = clamp(v/uScale, 0.0, 1.0);
-        fragColor4 = vec4(pow(v, 4.0), pow(v, 1.5), pow(v, 0.7), 1.0);
+        fragColor4 = vec4(pow(v, 2.0), pow(v, 1.0), pow(v, 0.5), 1.0);
     }
     else if (uMode == 1) {    
         // Amplitude.
-        vec4 y = texture(uSampler, TC);    
+        vec4 y = gaussian_sample(uSampler, TC, 1.0);    
         float v = mpolate(y.a, y.b, y.g, 1.0 - uFrameTime);
-        v = clamp((v/uScale + 1.0) * 0.5, 0.0, 1.0);
-        fragColor4 = texture(uColor, vec2(v, 0.0));
+        v = clamp(v/uScale, -1.0, 1.0);
+        fragColor4 = amp_value_to_color(v);
     }
     else if (uMode == 2) {
         // Momentum of amplitude.
-        vec4 y = texture(uSampler, TC);
+        vec4 y = gaussian_sample(uSampler, TC, 1.0); 
         float a1 = mpolate(y.b, y.g, y.r, 1.0 - uFrameTime);   
         float a2 = mpolate(y.a, y.b, y.g, 1.0 - uFrameTime);
         float v = (a1 - a2);
-        v = clamp(0.5 + v/uScale * 0.5, 0.0, 1.0);
-        fragColor4 = texture(uColor, vec2(v, 0.0));   
+        v = clamp(v/uScale, -1.0, 1.0);
+        fragColor4 = mom_value_to_color(v);
     }
     else if (uMode == 3) {
-        // Acceleration of amplitude.
+        // Acceleration amount of amplitude.
         vec4 gy = gaussian_sample(uSampler, TC, uSigma);
-        vec4 ty = texture(uSampler, TC);
-        vec4 dy = gy - ty;   // Acceleration force.
+        vec4 ty = sample_texture(uSampler, TC);
+        vec4 dy = gy - ty;
         float v = mpolate(dy.b, dy.g, dy.r, 1.0 - uFrameTime);
-        v = clamp(0.5 + v/uScale * 0.5, 0.0, 1.0);
-        v = (v < 0.5) ? pow(v * 2.0, 0.5)/2.0 : pow((v - 0.5) * 2.0, 2.0)/2.0 + 0.5;
-        fragColor4 = texture(uColor, vec2(v, 0.0));
+        v = clamp(v/uScale, -1.0, 1.0);
+        fragColor4 = acc_value_to_color(v);
     }
 }`;
 
@@ -356,7 +403,7 @@ const VALUES = {"Sigma":2,
                 "Edge":0,       // 0:Reflect
                 "Mode":0,       // 0:Gradient
                 "Scale":4,
-                "Speed":4,
+                "Speed":8.5,
                 "Direction":1,  // -1:reverse 1:forward
                 "Animating":0,  // 0:false, 1:true
                 "FrameCount":0,
@@ -371,19 +418,8 @@ const MODE = ["Gradient", "Amplitude", "Momentum", "Acceleration"]
 const EDGE = ["Reflect", "Wrap", "Round Reflect", "Round Wrap"]
 const UNIFORMS = new Set(["Sigma", "C1", "E1", "C2", "E2", "uE2"])
 
-
-const ColorLUT = new Uint8Array([            
-    200, 100, 100, 128,
-    200, 0,   0,   255, 
-    0,   0,   0,   255,
-    50,   50,   255, 255,
-    100, 100, 255, 128,
-]);
-    
-
-
 var canvas, gl, prog_draw, prog_calc, prog_swap, prog_render,
-    texture0, texture1, colorlut;
+    texture0, texture1;
 
 // Enables reapeatable starting conditions.
 Math.seed = 0
@@ -484,24 +520,7 @@ function main() {
     gl.bindAttribLocation(prog_render, aTexLoc, "aTexCoord")
     gl.linkProgram(prog_render)
 
-    set_grid_size(`${VALUES["Width"]}, ${VALUES["Height"]}`)  
-    
-    
-    
-    // Define color table.
-    var width = 5;
-    var height = 1;
-    var texture = gl.createTexture()
-    gl.activeTexture(gl.TEXTURE0 + 3)
-    gl.bindTexture(gl.TEXTURE_2D, texture)
-    gl.texStorage2D(gl.TEXTURE_2D, 1, gl.RGBA8, width, height)
-    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, ColorLUT)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-    gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)    
-    set_uniform_1i(prog_draw, "uColor", 3)
-    
+    set_grid_size(`${VALUES["Width"]}, ${VALUES["Height"]}`)
     
     set_uniform_1i(prog_draw, "uSampler", 0)
     set_uniform_1i(prog_calc, "uSampler", 0)
@@ -1490,7 +1509,7 @@ input {
                                 mechanism for energy to quantify from waves.
                             </p>
                             <p>
-                                Version-1.0-11<br>
+                                Version-1.0-12<br>
                                 Date: 12/28/2021<br>
                                 Copyright 2021 Ronald R. Adam
                             </p>
