@@ -30,12 +30,12 @@ vec4 sample_texture(sampler2D sampler, vec2 texCoord){
     float rd = 1.0;
     if ((uEdge == 2) && (dist > 0.49)) {
         // Mirror value from edge.
-        rd = (.49 - (dist - .49))/dist;
-        texCoord = vec2(0.5 + (texCoord.x - 0.5)*rd, 0.5 + (texCoord.y - 0.5)*rd);
+        rd = (0.49 * 0.49) / (dist * dist);
+        texCoord = 0.5 + (texCoord - 0.5) * rd;
     }else if ((uEdge == 3) && (dist > 0.49)) {
         // Use value on other side of curcle.
-        rd = (0.49 - (dist - 0.49))/dist;
-        texCoord = vec2(0.5 + (0.5 - texCoord.x)*rd, 0.5 + (0.5 - texCoord.y)*rd);
+        rd = (0.49 * 0.49) / (dist * dist);
+        texCoord = 0.5 - (texCoord - 0.5) * rd;
     }
     return texture(sampler, texCoord) * rd;
 }
@@ -50,31 +50,35 @@ vec4 gaussian_sample(sampler2D sampler, vec2 texCoord, float sigma){
     float kweight = 1.0;              // Count of samples.
 
     float m2ss = -2.0 * sigma * sigma;
-    int r = 1;              // Radius of kernel.
+    float r = 1.0;          // Radius of kernel.
     float k = 1.0;          // Kernel value at pixel.
     float dist = 0.0;
     while (true) {
         // Find k for this distance.
-        //Stays the same till next loop.
-        dist = float(abs(r));
+        dist = r;
         k = exp(dist * dist / m2ss);  // Gaussian curve
-        if (k<0.1) {
+        if (k<0.25) {
+            // All values for after this will be lower too,
+            // so exit loop.
             break;
         }
-        float rtx = float(r)/texSize.x;
-        float rty = float(r)/texSize.y;
+        float rtx = r/texSize.x;
+        float rty = r/texSize.y;
+        // Get values on axis's.
         G += sample_texture(sampler, TC + vec2( rtx, 0.0)) * k;
         G += sample_texture(sampler, TC + vec2(-rtx, 0.0)) * k;
         G += sample_texture(sampler, TC + vec2( 0.0,-rty)) * k;
         G += sample_texture(sampler, TC + vec2( 0.0, rty)) * k;
         kweight += k * 4.0;
-        // Get off center side values along a side.
-        for (int dx=1; dx<r; dx++) {
+        // Get off center values along sides.
+        for (float dx=1.0; dx<r; dx++) {
             dist = length(vec2(dx, r));
             k = exp(dist * dist / m2ss);
-            if (k<0.1) break;
-            float dxt = float(dx)/texSize.x;
-            float dyt = float(dx)/texSize.y;
+            if (k < 0.25) {
+                break;
+            }
+            float dxt = dx/texSize.x;
+            float dyt = dx/texSize.y;
             vec4 sides = sample_texture(sampler, TC + vec2( dxt, rty));
             sides += sample_texture(sampler, TC + vec2(-dxt, rty));
             sides += sample_texture(sampler, TC + vec2( rtx, dyt));
@@ -89,20 +93,21 @@ vec4 gaussian_sample(sampler2D sampler, vec2 texCoord, float sigma){
         // Get corner values.
         dist = length(vec2(r, r));
         k = exp(dist * dist / m2ss);
-        if (k>0.1) {
+        if (k>0.25) {
             G += sample_texture(sampler, TC + vec2( rtx,  rty)) * k;
             G += sample_texture(sampler, TC + vec2( rtx, -rty)) * k;
             G += sample_texture(sampler, TC + vec2(-rtx, -rty)) * k;
             G += sample_texture(sampler, TC + vec2(-rtx,  rty)) * k;
             kweight += k * 4.0;
         }
-        r += 1;
+        r += 1.0;
     }
     G /= kweight;
     return G;
 }
 `
 
+// Used for display only.
 const gaussian_gradient_sample = `
 vec4 gaussian_gradient_sample(sampler2D sampler, vec2 texCoord, float sigma){
     vec2 texSize = vec2(textureSize(sampler, 0));
@@ -114,31 +119,31 @@ vec4 gaussian_gradient_sample(sampler2D sampler, vec2 texCoord, float sigma){
     float kweight = 1.0;                      // Count of samples.
 
     float m2ss = -2.0 * sigma * sigma;
-    int r = 1;              // Radius of kernel.
+    float r = 1.0;          // Radius of kernel below  
     float k = 1.0;          // Kernel value at pixel.
     float dist = 0.0;
-    while (true) {
+    while (r < sigma) {
         // Find k for this distance.
         //Stays the same till next loop.
-        dist = float(abs(r));
+        dist = r;
         k = exp(dist * dist / m2ss);  // Gaussian curve
-        if (k<0.1) {
+        if (k<0.25) {
             break;
         }
-        float rtx = float(r)/texSize.x;
-        float rty = float(r)/texSize.y;
+        float rtx = r/texSize.x;
+        float rty = r/texSize.y;
         G += gradient_sample(sampler, TC + vec2( rtx, 0.0)) * k;
         G += gradient_sample(sampler, TC + vec2(-rtx, 0.0)) * k;
         G += gradient_sample(sampler, TC + vec2( 0.0,-rty)) * k;
         G += gradient_sample(sampler, TC + vec2( 0.0, rty)) * k;
         kweight += k * 4.0;
         // Get off center side values along a side.
-        for (int dx=1; dx<r; dx++) {
+        for (float dx=1.0; dx<r; dx++) {
             dist = length(vec2(dx, r));
             k = exp(dist * dist / m2ss);
-            if (k<0.1) break;
-            float dxt = float(dx)/texSize.x;
-            float dyt = float(dx)/texSize.y;
+            if (k<0.25) break;
+            float dxt = dx/texSize.x;
+            float dyt = dx/texSize.y;
             vec4 sides = gradient_sample(sampler, TC + vec2( dxt, rty));
             sides += gradient_sample(sampler, TC + vec2(-dxt, rty));
             sides += gradient_sample(sampler, TC + vec2( rtx, dyt));
@@ -153,14 +158,14 @@ vec4 gaussian_gradient_sample(sampler2D sampler, vec2 texCoord, float sigma){
         // Get corner values.
         dist = length(vec2(r, r));
         k = exp(dist * dist / m2ss);
-        if (k>0.1) {
+        if (k>0.25) {
             G += gradient_sample(sampler, TC + vec2( rtx,  rty)) * k;
             G += gradient_sample(sampler, TC + vec2( rtx, -rty)) * k;
             G += gradient_sample(sampler, TC + vec2(-rtx, -rty)) * k;
             G += gradient_sample(sampler, TC + vec2(-rtx,  rty)) * k;
             kweight += k * 4.0;
         }
-        r += 1;
+        r += 1.0;
     }
     G /= kweight;
     return G;
@@ -269,16 +274,20 @@ ${mpolate}
 
 vec4 amp_value_to_color(float v){ 
     float r = 0.0;
+    float g = 0.0;
     float b = 0.0;
     if (v>0.0) {
+        // Red
         r = v;
-        b = pow(v, 3.0) * 0.95; 
+        g = pow(abs(v), 4.0);
+        b = pow(v, 3.0) * 0.95;
     }
-    if (v<0.0) {
-        b = abs(v);
+    else if (v<0.0) {
+        // Blue
         r = pow(abs(v), 3.0) * 0.95;
+        g = pow(abs(v), 4.0);    
+        b = abs(v);
     }
-    float g = pow(abs(v), 4.0);
     return vec4(r, g, b, 1.0);
 }
 
@@ -290,7 +299,7 @@ vec4 mom_value_to_color(float v){
         // Blue
         r = pow(abs(v), 2.0) * 0.95;
         g = max(v/2.0, pow(v, 3.0)); 
-        b = pow(v, 0.75);
+        b = pow(v, 0.5);
     }
     if (v<0.0) {
         // Teal
@@ -1509,7 +1518,7 @@ input {
                                 mechanism for energy to quantify from waves.
                             </p>
                             <p>
-                                Version-1.0-12<br>
+                                Version-1.0-13<br>
                                 Date: 12/28/2021<br>
                                 Copyright 2021 Ronald R. Adam
                             </p>
